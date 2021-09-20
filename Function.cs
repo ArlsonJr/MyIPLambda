@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 using Amazon.Lambda.Core;
@@ -21,7 +23,26 @@ namespace MyIPLambda
         /// <returns></returns>
         public string FunctionHandler(string input, ILambdaContext context)
         {
-            return input?.ToUpper();
+            try
+            {
+                var request = HttpWebRequest.Create("http://meuip.com/api/meuip.php");
+
+                request.Method = WebRequestMethods.Http.Get;
+
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        var retorno = reader.ReadToEnd();
+
+                        return retorno;
+                    }
+                }
+            }
+            catch
+            {
+                return "Ocorreu um erro ao processar sua solicitação.";
+            }
         }
     }
 }
